@@ -61,33 +61,49 @@ def enqueue(state, time):
     heapq.heappush(next_heap, (time, state))
     min_times[state] = time
 
-enqueue(State({THINGNAMES['Cursor']:1},parent=None,step=THINGNAMES['Cursor']), 0)
+enqueue(
+    State(
+        {
+            THINGNAMES['Human']:1,
+        },
+        parent=None,
+        step=THINGNAMES['Human']),
+    0)
 
-def pn(*args, **kwargs):
-    print(*args, end=' ', **kwargs)
+DEBUG=False
+def vprint(*args, **kwargs):
+    if DEBUG:
+        print(*args, **kwargs)
+
+def vpn(*args, **kwargs):
+    vprint(*args, end=' ', **kwargs)
 
 now = 0
 while now <= end_time:
     now, state = heapq.heappop(next_heap)
-    pn(now, len(next_heap), state)
+    vpn(now, len(next_heap), state)
+    vpn('BEST:', best_rate, best_state)
 
     if state in min_times and min_times[state] < now:
-        print('SKIP', min_times[state])
+        vprint('SKIP', min_times[state])
         continue
+
+    vprint()
 
     r = state.rate()
     if r > best_rate:
         best_rate = r
         best_state = state
 
-    print()
-
-    for option in THINGS:
+    for option in BUILDABLES:
         time_reached = state.cost(option) / r + now
         newstate = state.add(option)
         enqueue(newstate, time_reached)
-        print(' ->', time_reached, newstate)
+        vprint(' ->', time_reached, newstate)
 
-    print(' BEST PLAN:', best_rate, best_state)
-    for state in best_state.plan():
-        print('  -', min_times[state], state.step.name, '->', state, state.rate())
+
+
+
+print(' BEST PLAN:', best_rate, best_state)
+for state in best_state.plan():
+    print('  -', min_times[state], state.step.name, '->', state, state.rate())
