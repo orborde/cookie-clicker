@@ -4,11 +4,15 @@ import argparse
 from math import inf
 from frozendict import frozendict
 import heapq
+import sys
+import time
 from tqdm import tqdm
 
 parser = argparse.ArgumentParser(description='Generate an optimal Cookie Clicker build')
 parser.add_argument('-d', '--debug', action='store_true', help='Enable debug output')
 parser.add_argument('end_time', type=int, help="Game time to generate a plan for")
+parser.add_argument('-r', '--report_interval', type=int, default=0,
+    help='Report progress every N seconds (0=off)')
 args = parser.parse_args()
 
 end_time = args.end_time
@@ -102,6 +106,7 @@ count = 0
 expanded = 0
 skipped = 0
 earliest_after_end = inf
+last_report = time.time()
 with tqdm(total=end_time) as pbar:
     while now <= end_time:
         count += 1
@@ -112,6 +117,11 @@ with tqdm(total=end_time) as pbar:
         now = new_now
         vpn(now, len(next_heap), state)
         vpn('BEST:', best_rate, best_state)
+
+        if args.report_interval > 0 and time.time() - last_report > args.report_interval:
+            last_report = time.time()
+            # Print best to stderr
+            print(f'BEST: {best_rate} {best_state}', file=sys.stderr)
 
         if state in min_times and min_times[state] < now:
             vprint('SKIP', min_times[state])
