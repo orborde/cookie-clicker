@@ -81,6 +81,7 @@ def vpn(*args, **kwargs):
 
 now = 0
 count = 0
+expanded = 0
 skipped = 0
 with tqdm(total=end_time) as pbar:
     while now <= end_time:
@@ -88,7 +89,7 @@ with tqdm(total=end_time) as pbar:
         new_now, state = heapq.heappop(next_heap)
         pbar.update(new_now - now)
         pbar.set_description(
-            f'{count}/{len(next_heap)}/{len(next_heap)+count} {len(min_times)} visited {skipped} skipped')
+            f'{count}/{len(next_heap)}/{len(next_heap)+count} {len(min_times)} visited {expanded} expanded {skipped} skipped')
         now = new_now
         vpn(now, len(next_heap), state)
         vpn('BEST:', best_rate, best_state)
@@ -105,6 +106,7 @@ with tqdm(total=end_time) as pbar:
             best_rate = r
             best_state = state
 
+        expanded += 1
         for option in BUILDABLES:
             time_reached = state.cost(option) / r + now
             newstate = state.add(option)
