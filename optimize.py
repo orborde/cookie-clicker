@@ -1,13 +1,18 @@
 #! /usr/bin/env python3
 
+import argparse
 from math import inf
 from frozendict import frozendict
 import heapq
-import sys
 from tqdm import tqdm
 
-_, end_time = sys.argv
-end_time = int(end_time)
+parser = argparse.ArgumentParser(description='Generate an optimal Cookie Clicker build')
+parser.add_argument('-d', '--debug', action='store_true', help='Enable debug output')
+parser.add_argument('end_time', type=int, help="Game time to generate a plan for")
+args = parser.parse_args()
+
+end_time = args.end_time
+DEBUG = args.debug
 
 from things import *
 
@@ -85,7 +90,6 @@ enqueue(
         step=THINGNAMES['Cursor']),
     0)
 
-DEBUG=False
 def vprint(*args, **kwargs):
     if DEBUG:
         print(*args, **kwargs)
