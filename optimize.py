@@ -81,18 +81,21 @@ def vpn(*args, **kwargs):
 
 now = 0
 count = 0
+skipped = 0
 with tqdm(total=end_time) as pbar:
     while now <= end_time:
         count += 1
         new_now, state = heapq.heappop(next_heap)
         pbar.update(new_now - now)
-        pbar.set_description(f'{count}/{len(next_heap)}/{len(next_heap)+count} {len(min_times)} visited')
+        pbar.set_description(
+            f'{count}/{len(next_heap)}/{len(next_heap)+count} {len(min_times)} visited {skipped} skipped')
         now = new_now
         vpn(now, len(next_heap), state)
         vpn('BEST:', best_rate, best_state)
 
         if state in min_times and min_times[state] < now:
             vprint('SKIP', min_times[state])
+            skipped += 1
             continue
 
         vprint()
