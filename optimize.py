@@ -3,6 +3,7 @@
 from frozendict import frozendict
 import heapq
 import sys
+from tqdm import tqdm
 
 _, end_time = sys.argv
 end_time = int(end_time)
@@ -79,27 +80,33 @@ def vpn(*args, **kwargs):
     vprint(*args, end=' ', **kwargs)
 
 now = 0
-while now <= end_time:
-    now, state = heapq.heappop(next_heap)
-    vpn(now, len(next_heap), state)
-    vpn('BEST:', best_rate, best_state)
+count = 0
+with tqdm(total=end_time) as pbar:
+    while now <= end_time:
+        count += 1
+        new_now, state = heapq.heappop(next_heap)
+        pbar.update(new_now - now)
+        pbar.set_description(f'{count}/{len(next_heap)}/{len(next_heap)+count} {len(min_times)} visited')
+        now = new_now
+        vpn(now, len(next_heap), state)
+        vpn('BEST:', best_rate, best_state)
 
-    if state in min_times and min_times[state] < now:
-        vprint('SKIP', min_times[state])
-        continue
+        if state in min_times and min_times[state] < now:
+            vprint('SKIP', min_times[state])
+            continue
 
-    vprint()
+        vprint()
 
-    r = state.rate()
-    if r > best_rate:
-        best_rate = r
-        best_state = state
+        r = state.rate()
+        if r > best_rate:
+            best_rate = r
+            best_state = state
 
-    for option in BUILDABLES:
-        time_reached = state.cost(option) / r + now
-        newstate = state.add(option)
-        enqueue(newstate, time_reached)
-        vprint(' ->', time_reached, newstate)
+        for option in BUILDABLES:
+            time_reached = state.cost(option) / r + now
+            newstate = state.add(option)
+            enqueue(newstate, time_reached)
+            vprint(' ->', time_reached, newstate)
 
 
 
