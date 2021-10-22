@@ -110,11 +110,10 @@ last_report = time.time()
 with tqdm(total=end_time) as pbar:
     while now <= end_time:
         count += 1
-        new_now, state = heapq.heappop(next_heap)
-        pbar.update(new_now - now)
+        now, state = heapq.heappop(next_heap)
+        pbar.n = now
         pbar.set_description(
             f'{count}/{len(next_heap)}/{len(next_heap)+count} {len(min_times)} visited {expanded}/{expanded+skipped} expanded')
-        now = new_now
         vpn(now, len(next_heap), state)
         vpn('BEST:', best_rate, best_state)
 
