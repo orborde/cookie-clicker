@@ -16,6 +16,7 @@ with open('things.csv', 'r') as f:
 
 THINGS = BUILDABLES
 THINGNAMES = {t.name:t for t in THINGS}
+THINGNAMES_SORTED = sorted(THINGNAMES.keys())
 
 def cost(thing, count):
     return math.ceil(thing.base_cost * (1.15 ** count))

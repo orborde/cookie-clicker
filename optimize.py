@@ -27,6 +27,19 @@ class State:
     def __eq__(self, other):
         return self._data == other._data
 
+    def __quantity_key(self):
+        k=[]
+        for n in THINGNAMES_SORTED:
+            if n in self._data:
+                k.append(self._data[n])
+            else:
+                k.append(0)
+        return tuple(k)
+
+    def __lt__(self, other):
+        """WARNING: this is a hack to enable heapq to deal with heaps involving this class"""
+        return self.__quantity_key() < other.__quantity_key()
+
     def __str__(self):
         return '{' + ', '.join('{}:{}'.format(t.name, self._data[t]) for t in THINGS) + '}'
 
