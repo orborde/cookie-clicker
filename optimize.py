@@ -1,7 +1,9 @@
 #! /usr/bin/env python3
 
 import argparse
-from math import inf
+import collections
+import csv
+import math
 from frozendict import frozendict
 import heapq
 import sys
@@ -13,12 +15,34 @@ parser.add_argument('-d', '--debug', action='store_true', help='Enable debug out
 parser.add_argument('end_time', type=int, help="Game time to generate a plan for")
 parser.add_argument('-r', '--report_interval', type=int, default=0,
     help='Report progress every N seconds (0=off)')
+parser.add_argument('--human', action='store_true', help="Simulate a human clicker (and don't start with a cursor)")
 args = parser.parse_args()
 
 end_time = args.end_time
 DEBUG = args.debug
 
-from things import *
+
+Thing = collections.namedtuple('Thing', ['name', 'base_cost', 'rate'])
+
+BUILDABLES = []
+
+with open('things.csv', 'r') as f:
+    for row in csv.DictReader(f):
+        obj = Thing(
+            name=row['name'],
+            base_cost=int(row['base_cost']),
+            rate=float(row['rate']))
+        BUILDABLES.append(obj)
+
+THINGS = [Thing('Human', math.inf, 4)] + BUILDABLES
+THINGNAMES = {t.name:t for t in THINGS}
+THINGNAMES_SORTED = [t.name for t in THINGS]
+
+def cost(thing, count):
+    return math.ceil(thing.base_cost * (1.15 ** count))
+
+def rate(thing, count):
+    return thing.rate * count
 
 class State:
     def __init__(self, data=None, parent=None, step=None):
@@ -85,14 +109,24 @@ def enqueue(state, time):
     heapq.heappush(next_heap, (time, state))
     min_times[state] = time
 
-enqueue(
-    State(
-        {
-            THINGNAMES['Cursor']:1,
-        },
-        parent=None,
-        step=THINGNAMES['Cursor']),
-    0)
+if args.human:
+    enqueue(
+        State(
+            {
+                THINGNAMES['Human']:1,
+            },
+            parent=None,
+            step=THINGNAMES['Human']),
+        0)
+else:
+    enqueue(
+        State(
+            {
+                THINGNAMES['Cursor']:1,
+            },
+            parent=None,
+            step=THINGNAMES['Cursor']),
+        0)
 
 def vprint(*args, **kwargs):
     if DEBUG:
@@ -105,7 +139,7 @@ now = 0
 count = 0
 expanded = 0
 skipped = 0
-earliest_after_end = inf
+earliest_after_end = math.inf
 last_report = time.time()
 with tqdm(total=end_time) as pbar:
     while now <= end_time:
