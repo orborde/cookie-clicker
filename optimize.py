@@ -64,10 +64,10 @@ def enqueue(state, time):
 enqueue(
     State(
         {
-            THINGNAMES['Human']:1,
+            THINGNAMES['Cursor']:1,
         },
         parent=None,
-        step=THINGNAMES['Human']),
+        step=THINGNAMES['Cursor']),
     0)
 
 DEBUG=False

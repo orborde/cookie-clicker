@@ -14,13 +14,7 @@ with open('things.csv', 'r') as f:
             rate=float(row['rate']))
         BUILDABLES.append(obj)
 
-THINGS = [
-    Thing(
-        name='Human',
-        base_cost=0,
-        rate=4,
-    )
-] + BUILDABLES
+THINGS = BUILDABLES
 THINGNAMES = {t.name:t for t in THINGS}
 
 def cost(thing, count):
