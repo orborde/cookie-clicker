@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+from math import inf
 from frozendict import frozendict
 import heapq
 import sys
@@ -96,6 +97,7 @@ now = 0
 count = 0
 expanded = 0
 skipped = 0
+earliest_after_end = inf
 with tqdm(total=end_time) as pbar:
     while now <= end_time:
         count += 1
@@ -122,6 +124,12 @@ with tqdm(total=end_time) as pbar:
         expanded += 1
         for option in BUILDABLES:
             time_reached = state.cost(option) / r + now
+
+            if time_reached > end_time:
+                earliest_after_end = min(earliest_after_end, time_reached)
+                if time_reached > earliest_after_end:
+                    continue
+
             newstate = state.add(option)
             enqueue(newstate, time_reached)
             vprint(' ->', time_reached, newstate)
