@@ -51,7 +51,7 @@ class State:
         return self.__quantity_key() < other.__quantity_key()
 
     def __str__(self):
-        return '{' + ', '.join('{}:{}'.format(t.name, self._data[t]) for t in THINGS) + '}'
+        return '{' + ', '.join('{}:{}'.format(t.name, self._data[t]) for t in THINGS if self._data[t]>0) + '}'
 
     def __repr__(self):
         return self.__str__()
