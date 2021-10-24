@@ -9,6 +9,7 @@ import heapq
 import sys
 import time
 from tqdm import tqdm
+from typing import *
 
 parser = argparse.ArgumentParser(description='Generate an optimal Cookie Clicker build')
 parser.add_argument('-d', '--debug', action='store_true', help='Enable debug output')
@@ -85,6 +86,12 @@ class State:
         data[thing] += 1
         return State(data=data, parent=self, step=thing)
 
+    def decrement(self, thing):
+        data = {t:self._data[t] for t in THINGS}
+        data[thing] -= 1
+        # Not super clear that parent or step are meaningful in this context
+        return State(data=data, parent=None, step=None)
+
     def rate(self):
         return sum(rate(t, self._data[t]) for t in THINGS)
 
@@ -96,6 +103,16 @@ class State:
             return [self]
         else:
             return self._parent.plan() + [self]
+
+    def dominated_states(self):
+        """Returns a list of states that are strictly worse than the current state.
+
+        Note that this only returns states that have one less of a buildable than the current state;
+        you'll need to roll the recursive case on your own.
+        """
+        # Intentionally using BUILDABLES not THINGS here because the latter may include a "human",
+        # which you cannot buy and hence cannot remove.
+        return [self.decrement(thing) for thing in BUILDABLES if self._data[thing] > 0]
 
 min_times = {}
 next_heap = []
@@ -136,6 +153,20 @@ def vpn(*args, **kwargs):
     vprint(*args, end=' ', **kwargs)
 
 now = 0
+
+def find_dominated_states() -> Set[State]:
+    """Find the set of states that are dominated by some other state."""
+    dominated_states = set()
+    for state in tqdm([k for k in min_times.keys() if min_times[k] <= now], desc='Enumerating dominated states'):
+        todo = state.dominated_states()
+        while len(todo) > 0:
+            s = todo.pop()
+            if s not in dominated_states:
+                dominated_states.add(s)
+                todo.extend(x for x in s.dominated_states() if x not in dominated_states)
+
+    return [s for _, s in next_heap if s in dominated_states]
+
 count = 0
 expanded = 0
 skipped = 0
